@@ -542,3 +542,83 @@ This is the work.
 10. ACM. "Self-Speculative Decoding for On-device MoE." WWW 2026.
 11. ACM. "A Survey on Inference Optimization Techniques for Mixture of
     Experts Models." Computing Surveys, 2026.
+12. AloLab. "When Correct Isn't Usable: Improving Structured Output
+    Reliability in Small Language Models." arXiv:2605.02363, 2026.
+13. LiteCoST. "Long-Document QA with Chain-of-Structured-Thought and
+    Fine-Tuned SLMs." ICLR 2026.
+14. "Domain-Adapted Small Language Models with Hybrid Post-Processing:
+    100% JSON Validity via Neural-Symbolic Pipeline." arXiv:2606.05781, 2026.
+15. "Fine-Tuned Small Models Beat RAG: The 2026 Economics." Dev.to, 2026.
+16. "Internalizing Tool Knowledge in Small Language Models via QLoRA
+    Fine-Tuning." arXiv:2605.17774, 2026.
+17. "Qwen2.5-1.5B JSON Repair: Structured Pruning + Distillation." 2025.
+18. XGrammar-2. "Dynamic and Efficient Structured Generation Engine for
+    Agentic LLMs." ASPLOS/AI Agentic Systems, 2026.
+
+---
+
+## Addendum: The Conversational Parity Path (June 30, 2026)
+
+### The Goal
+
+A 3B-parameter model that is **indistinguishable in conversation quality**
+from a 70B+ model. Not "good for its size." No compromise. The user should
+not be able to tell which model they're talking to.
+
+### Why This Is Plausible
+
+Three independent research streams converge on this possibility:
+
+1. **LiteCoST (ICLR 2026):** 3B/7B SLMs achieve **LLM-comparable quality**
+   on structured QA with 2–4× lower latency than GPT-4o and DeepSeek-R1
+   (671B). Chain-of-Structured-Thought + GRPO with triple rewards.
+
+2. **BioMed SLM (June 2026):** Mistral-7B QLoRA **beat GPT-4o and GPT-5**
+   by 12% F1 on biomedical claim verification. 44.5× cheaper. 1,008
+   training examples.
+
+3. **Hybrid neural-symbolic pipeline (June 2026):** 100% JSON structural
+   validity by decomposing tasks: neural for contextual understanding,
+   deterministic rules for invariant enforcement. The neural component
+   handles ambiguity; the symbolic component guarantees correctness.
+
+### The Architecture for Conversational Parity
+
+The model does not generate conversation directly. It generates a
+**structured response plan** — a cognitive intermediate representation
+specifying: insight, grounding citations, tone, structure, and boundaries.
+The Witness verifies the plan. A rendering layer produces natural language.
+
+```
+User query → Lens (decode keys) → Knowledge Field traversal
+    → Response Plan (structured) → Witness verification
+    → Natural language rendering → Response
+```
+
+The 3B model's job is not eloquence. It is **correctness.** The rendering
+provides fluency. The Field provides knowledge. The Witness provides
+grounding. The model provides reasoning.
+
+### Training Stages for Conversational Parity
+
+| Stage | Method | Data | Purpose |
+|-------|--------|------|---------|
+| SFT-Structure | QLoRA (rank 16–32) | 500–1K (query → response plan) pairs | Model learns to produce structured cognitive plans |
+| GRPO | Group Relative Policy Optimization | Verifiable rewards (grounding, consistency, format) | Model learns to self-correct and verify |
+| DPO | Direct Preference Optimization | Human/model preference pairs | Model learns conversational quality |
+| Witness Integration | Deterministic rules | 7 structural checks + citation honesty | Guarantees grounding, prevents hallucination |
+
+### Key Research Findings Applied
+
+- **DoRA over LoRA**: Decomposes weight updates into magnitude and direction
+  — better convergence for structured output (rank 32 for complex domains)
+- **All linear layers**: Target q_proj, k_proj, v_proj, o_proj, gate_proj,
+  up_proj, down_proj — significantly better than Q/V only
+- **Hybrid neural-symbolic**: "Decompose contextual understanding (neural)
+  from invariant rule enforcement (symbolic)" — this IS our Witness
+- **AloLab finding**: Even strong reasoning models produce 0% valid
+  structured output with naive prompting. Prompt optimization reaches 84%.
+  The prompt IS the architecture.
+- **Constrained decoding caveat**: Grammar enforcement guarantees syntax
+  but incurs 3.6–8.2× latency and can degrade task performance. Our
+  approach (response plan → render) avoids this tradeoff entirely.
