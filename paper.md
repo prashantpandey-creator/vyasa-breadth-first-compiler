@@ -8,7 +8,7 @@ July 2, 2026
 
 ## Abstract
 
-Current AI code generators produce applications token-by-token from natural language prompts, resulting in cross-file inconsistencies, hallucinated imports, and missing foreign keys. Production survival rates for prompt-to-code tools range from 38% (Lovable) to 71% (v0), with median refactor costs of 2.4–4.8× the original generation time. We present **Vyasa**, a three-stage compiler architecture where the LLM produces a typed **Architectural Graph** (structured intermediate representation), a deterministic **Witness** validates it against 12 structural rules, and a **Manifest Engine** compiles validated graphs into working code with zero hallucination. The Architectural Graph compresses application specification approximately 13:1 versus direct token generation. We train a 3B-parameter adapter (Qwen-2.5-3B-Instruct + QLoRA) on teacher-generated graphs, achieving 66.7% valid JSON with 25.0% Witness-clean rate. Deterministic stages execute in under 2 milliseconds total. We introduce **GRPO+Witness**, a training flywheel where the Witness itself provides the reward signal — no human evaluation is needed. The deterministic compilation guarantees that every import resolves, every type is consistent, and every foreign key exists, regardless of the LLM's underlying error rate.
+Current AI code generators produce applications token-by-token from natural language prompts, resulting in cross-file inconsistencies, hallucinated imports, and missing foreign keys. Production survival rates for prompt-to-code tools range from 38% (Lovable) to 71% (v0), with median refactor costs of 2.4–4.8× the original generation time. We present **Vyasa**, a three-stage compiler architecture where the LLM produces a typed **Architectural Graph** (structured intermediate representation), a deterministic **Witness** validates it against 12 structural rules, and a **Manifest Engine** compiles validated graphs into working code with zero hallucination. The Architectural Graph compresses application specification approximately 13:1 versus direct token generation. We train a 3B-parameter adapter (Qwen-2.5-3B-Instruct + QLoRA) on teacher-generated graphs, achieving 50.0% valid JSON (95% CI: 30–70%) with 15.0% Witness-clean rate (95% CI: 5–36%) on a 20-test suite across 8 domains. Deterministic stages execute in under 2 milliseconds total. We introduce **GRPO+Witness**, a training flywheel where the Witness itself provides the reward signal — no human evaluation is needed. The deterministic compilation guarantees that every import resolves, every type is consistent, and every foreign key exists, regardless of the LLM's underlying error rate.
 
 ---
 
@@ -199,17 +199,17 @@ We evaluate on a 50-description test suite spanning 8 domains: productivity, soc
 | Base Qwen-2.5-3B | 0% | 0% | — | — |
 | DeepSeek-V4-Flash | 0% | 0% | — | — |
 | Gemini-2.5-Flash | ~25% | — | — | — |
-| **Vyasa-3B (ours)** | **66.7%** | **25.0%** | **64.2s** | **4e / 14r** |
+| **Vyasa-3B (ours)** | **50.0%** | **15.0%** | **91.1s** | **4e / 15r** |
 | DeepSeek-Chat (teacher) | ~90% | — | ~30s | — |
 
 ### 4.3 Per-Domain Breakdown
 
 | Domain | Valid JSON | Witness Clean |
 |--------|:----------:|:-------------:|
-| Finance | 100% | 100% |
-| Tools | 100% | 100% |
-| Health | 50% | 50% |
-| Productivity | 50% | 0% |
+| Finance | 50% | 50% |
+| Tools | 50% | 50% |
+| Health | 33% | 33% |
+| Productivity | 100% | 0% |
 | Content | 100% | 0% |
 | Social | 50% | 0% |
 | Education | 33% | 0% |
@@ -219,11 +219,10 @@ We evaluate on a 50-description test suite spanning 8 domains: productivity, soc
 
 | Failure Type | Count | % of Failures |
 |-------------|:-----:|:------------:|
-| Foreign key mismatch | 10 | 38% |
-| JSON parse error | 4 | 15% |
-| Missing inverse relation | 5 | 19% |
-| Missing component | 2 | 8% |
-| Other structural | 5 | 19% |
+| JSON parse error | 10 | 50% |
+| Foreign key mismatch | 10 | 50% |
+| Missing inverse relation | 7 | 35% |
+| Missing component | 3 | 15% |
 
 ### 4.5 Deterministic Component Benchmarks
 
