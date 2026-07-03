@@ -185,22 +185,31 @@ The 3 Granthis (training stages) map to this trajectory:
 
 We evaluate on a 50-description test suite spanning 8 domains: productivity, social, health, finance, education, e-commerce, tools, and content. Each description is a natural-language app specification.
 
-**Baselines:**
-- **Base Qwen-2.5-3B** (no fine-tuning): 0% valid JSON
-- **DeepSeek-V4-Flash** (prompted, no fine-tuning): 0% valid JSON
-- **Gemini-2.5-Flash** (prompted): ~25% valid JSON
-- **DeepSeek-Chat** (prompted, teacher): ~90% valid JSON
-- **Vyasa-Architect-3B** (our adapter): 66.7% valid JSON
+**Baselines** (updated 2026-07-03 with the preregistered n=50 protocol —
+hypotheses and decision rules committed to git before execution; earlier
+small-n estimates shown struck where refuted):
+- **Base Qwen-2.5-3B** (no fine-tuning): ~~0%~~ **62% parseable / 8% schema-valid / 6% Witness-clean** (n=50)
+- **DeepSeek-V4-Flash** (prompted, no fine-tuning): 0% valid JSON (n=6, not re-measured)
+- **Gemini-2.5-Flash** (prompted): ~25% valid JSON (n=20, not re-measured)
+- **DeepSeek-Chat** (prompted, teacher): **98% parseable / 54% Witness-clean** (n=50; the earlier ~90%/~85% estimate was n≤10)
+- **Vyasa-Architect-3B** (our adapter): 40% parseable / 14% Witness-clean (n=50); concise-trained sibling (arch-v2): **68% / 34%**, **52% clean after deterministic Witness-guided repair**
 
 ### 4.2 Results
 
-| Model | Valid JSON | Witness Clean | Avg Latency | Avg Graph Size |
-|-------|:----------:|:-------------:|:-----------:|:--------------:|
-| Base Qwen-2.5-3B | 0% | 0% | — | — |
-| DeepSeek-V4-Flash | 0% | 0% | — | — |
-| Gemini-2.5-Flash | ~25% | — | — | — |
-| **Vyasa-3B (ours)** | **50.0%** | **15.0%** | **91.1s** | **4e / 15r** |
-| DeepSeek-Chat (teacher) | ~90% | — | ~30s | — |
+| Model (n=50, greedy, preregistered) | Parseable | Schema-valid | Witness-clean (95% CI) |
+|-------|:----------:|:-------------:|:-----------:|
+| Base Qwen-2.5-3B | 62% | 8% | 6% [2.1–16.2] |
+| vyasa-v1 (167 pairs) | 40% | 38% | 14% [7.0–26.2] |
+| **vyasa-arch-v2 (concise)** | **68%** | **66%** | **34% [22.4–47.8]** (52% + repair) |
+| DeepSeek-Chat (teacher) | 98% | 98% | 54% [40.4–67.0] |
+
+Key measured finding: **teacher and student fail on orthogonal axes** — the
+teacher's failures are semantic (pages unwired to data sources), the student's
+are mechanical referential-integrity errors. A deterministic repair pass
+therefore lifts the student +18pp but the teacher only +4pp. Earlier drafts of
+this section reported a 20-test run (50.0% valid / 15.0% clean, 91.1s avg
+latency); those adapter numbers are consistent with the n=50 measurement
+within CI, but the 0% base and ~90%/~85% teacher rows were refuted.
 
 ### 4.3 Per-Domain Breakdown
 

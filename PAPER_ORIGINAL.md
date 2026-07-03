@@ -1,3 +1,7 @@
+<!-- ARCHIVAL COPY (pre-restructure v1, frozen). Several results in this file were
+     superseded by the preregistered n=50 protocol of 2026-07-03: base is 62% parseable
+     (not 0%), teacher is 54% Witness-clean (not ~85%). Current numbers: README.md §3.3
+     and paper.md §4. Kept unmodified as the historical record. -->
 # Beyond Autoregressive Generation: Breadth-First Architecture Compilation for Verified Code Synthesis
 
 **Prashant Pandey — July 1, 2026**

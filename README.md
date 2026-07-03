@@ -55,9 +55,10 @@ $$P(\text{correct}) = P(\text{valid graph} \mid \text{intent}) \times \underbrac
 
 The compilation step is not probabilistic. Given the same valid graph, the
 compiler produces the same correct code every time. The only uncertainty is
-whether the architectural conception is correct. At a measured 90% clean rate
-(frontier model) or 50% (3B fine-tuned adapter), the probability of correct
-output is 90% or 50% — not 0.004%.
+whether the architectural conception is correct. At the teacher's measured 54%
+Witness-clean rate or the best 3B adapter's 34% — 52% after a deterministic
+Witness-guided repair pass (both n=50, preregistered protocol) — the
+probability of structurally correct output is that rate, not 0.004%.
 
 ---
 
@@ -72,7 +73,7 @@ STAGE 1: CONCEPTION (LLM)
   all entities, all routes, all pages, all components simultaneously
 
 STAGE 2: WITNESS COUNCIL (13 Deterministic Agents)
-  Agent 1-12: Structural integrity (relations, routes, pages, FKs, auth, types)
+  Agent 1-12: Structural integrity (relations, routes, pages, FKs, auth, primary keys)
   Agent 13: Feature coverage (does graph cover described features?)
   Each agent independent, specialized, runs in parallel
   Total latency: <1ms for all 13 agents
@@ -126,7 +127,7 @@ produces 28+ working code files.
 | 4 | Page routes exist | Broken data flow |
 | 5 | Foreign key fields present | Database integrity |
 | 6 | Auth configuration matches | Security gaps |
-| 7 | Prop types valid | Type errors |
+| 7 | Entity has primary key | Missing 'id' field |
 | 8 | Entity completeness | Empty models |
 | 9 | Auth pages consistent | Unprotected pages |
 | 10 | Handler logic present | Incomplete routes |
@@ -182,23 +183,39 @@ The Architectural Graph compresses application code 13:1. A 3,166-token
 graph describes what requires 40,000+ tokens of code. Measured reduction:
 1.6× (single-pass). Realistic reduction with error correction: 20–30×.
 
-### 3.3 Small Model Performance
+### 3.3 Small Model Performance (n=50, preregistered)
 
-A 3B-parameter model (Qwen-2.5-3B, 4-bit quantized) was fine-tuned on
-167 architectural conception pairs via QLoRA (3.33M trainable parameters,
-0.108% of base). Results:
+3B-parameter models (Qwen-2.5-3B, 4-bit quantized) were fine-tuned via QLoRA
+(3.33M trainable parameters, 0.108% of base). All rates below come from a
+preregistered 50-test evaluation — hypotheses and decision rules committed to
+git before execution, every run provenance-pinned. Correctness is reported at
+three levels, which earlier versions of this paper conflated:
 
-| Model | Valid JSON Rate | Witness Clean Rate |
-|-------|----------------|-------------------|
-| Base Qwen-2.5-3B | 0% | 0% |
-| **Vyasa-Architect-3B** | **~50%** | **~25%** |
-| deepseek-v4-flash (generic) | 0% | 0% |
-| gemini-2.5-flash (generic) | ~25% | ~10% |
-| deepseek-chat (teacher) | ~90% | ~85% |
+1. **Parseable** — output is valid JSON
+2. **Schema-valid** — parseable AND constructs an Architectural Graph
+3. **Witness-clean** — schema-valid AND passes all structural checks
 
-The 3B adapter achieves a 50% clean rate after simple SFT on 167 examples.
-GRPO training with Witness-as-reward (implemented, pending execution) targets
-90%+ — matching the teacher model at 1/200th the parameter count.
+| Model (n=50, greedy) | Parseable | Schema-valid | Witness-clean (95% CI) |
+|----------------------|-----------|--------------|------------------------|
+| Base Qwen-2.5-3B (untrained) | 62% | 8% | 6% [2.1–16.2] |
+| vyasa-v1 (167 pairs, 300 iters) | 40% | 38% | 14% [7.0–26.2] |
+| **vyasa-arch-v2 (concise pairs, 100 iters)** | **68%** | **66%** | **34% [22.4–47.8]** |
+| deepseek-chat (teacher, n=50) | 98% | 98% | 54% [40.4–67.0] |
+
+Three measured findings replace the earlier "0% → 50%" narrative:
+
+1. **SFT teaches schema conformance and structural discipline, not JSON** —
+   the untrained base already parses 62% of the time but is schema-valid only
+   8%; fine-tuning lifts schema conformance to 66% and Witness-clean 6%→34%.
+2. **Teacher and student fail on orthogonal axes.** The teacher's failures are
+   semantic (pages unwired to data); the student's are mechanical
+   referential-integrity errors. A deterministic Witness-guided repair pass
+   lifts the student 34% → 52% clean (+18pp) but the teacher only 54% → 58%.
+3. **Parameter framing, stated precisely:** 3B is ~1/12th the teacher's
+   *active* parameters (a ~671B-total MoE, ~37B active), ~1/224th of total.
+
+GRPO with Witness-as-reward (implemented) starts from the measured 34% clean
+baseline, gated on a preregistered pass@8 headroom probe.
 
 ### 3.4 Manifest Engine Performance
 

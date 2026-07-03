@@ -45,14 +45,14 @@ We evaluate on a 50-description test suite spanning 8 domains.
 \toprule
 Model & Valid JSON & Witness Clean & Latency & Graph Size \\
 \midrule
-Base Qwen-2.5-3B & 0\% & 0\% & -- & -- \\
+Base Qwen-2.5-3B & 62\%$^{\dagger}$ & 6\%$^{\dagger}$ & -- & -- \\
 DeepSeek-V4-Flash & 0\% & 0\% & -- & -- \\
 Gemini-2.5-Flash & $\sim$25\% & -- & -- & -- \\
 \textbf{Vyasa-3B (ours)} & \textbf{66.7\%} & \textbf{25.0\%} & 64.2s & 4e/14r \\
-DeepSeek-Chat (teacher) & $\sim$90\% & -- & $\sim$30s & -- \\
+DeepSeek-Chat (teacher) & 98\%$^{\dagger}$ & 54\%$^{\dagger}$ & $\sim$30s & -- \\
 \bottomrule
 \end{tabular}
-\caption{Model comparison on architectural graph generation}
+\caption{Model comparison on architectural graph generation. $^{\dagger}$Re-measured 2026-07-03 under a preregistered $n{=}50$ protocol (Wilson 95\% CIs in the repository's eval reports); the earlier estimates for these rows (0\% base, $\sim$90\%/$\sim$85\% teacher) were small-$n$ and are superseded.}
 \end{table}
 
 \begin{table}[h]
